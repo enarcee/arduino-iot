@@ -5,8 +5,8 @@
 #define USB Serial
 #define mdot Serial1
 
-#define app_id "70B3D57EF00035C8" 
-#define app_key "4D2331EB28B48FC3D487D1172CB57FFC"
+#define app_id "xxxxxxxxxxxxxxxxxx" 
+#define app_key "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 // Assign power and signal pins for sensors being used
 // Temperature & Humimidity sensor

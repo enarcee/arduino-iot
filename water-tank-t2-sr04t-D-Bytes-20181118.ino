@@ -22,8 +22,8 @@
 #define mdot Serial1
 
 // Define your Things Network Application EUI and App Key
-#define appEui "70B3D57ED00079C6" 
-#define appKey "21A728F1F00B6A84F64DB7A1EB8C5158"
+#define appEui "xxxxxxxxxxxxxxxxxx" 
+#define appKey "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 // Signal signal pins and max distance for JSN-SR04T

@@ -46,9 +46,6 @@ const char* password = "********";
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_DB_NAME, INFLUXDB_USER, INFLUXDB_PASSWORD);
 // InfluxDBClient client;
 Point sensor("thermostat");
-// create and init flowValue - store serial.write from Arduino
-// float flowValue = 0;
-
 
 void setup(){
   // Open perial port

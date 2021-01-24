@@ -1,0 +1,115 @@
+/* Sketch for Exhasut Fan Thermostat
+ * Author: Nick Cross 24/01/2021
+ * 
+ * Ver A - build and dht code 23/01/2021
+ * Wer B - addedd relay code and tested 24/01/2021
+ * 
+ */
+
+// Import libraries
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
+#include <ESP8266WiFi.h>
+#include <InfluxDbClient.h> 
+
+// Set dht parameters
+#define DHTPIN D4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN,DHTTYPE);
+
+//Set Relay parameters
+int RELAYPIN = D7;
+
+// Define application constants and variables
+// --------------------------------------------------
+// dht
+float temperatureData = 0.0;
+float humidityData = 0.0;
+// relay
+int fan = 0;
+float triggerTemperature = 25.0;
+
+// Wifi details
+const char* ssid = "enarceeoit";
+const char* password = "********";
+
+// InfluxDB
+//influxdb url
+#define INFLUXDB_URL "http://192.168.0.35:8086"
+// influxdb database
+#define INFLUXDB_DB_NAME "ttndb"
+// influxdb user
+#define INFLUXDB_USER "ttndb"
+// influxdb password
+#define INFLUXDB_PASSWORD "5*******"
+// influxdb client instance
+InfluxDBClient client(INFLUXDB_URL, INFLUXDB_DB_NAME, INFLUXDB_USER, INFLUXDB_PASSWORD);
+// InfluxDBClient client;
+Point sensor("thermostat");
+// create and init flowValue - store serial.write from Arduino
+// float flowValue = 0;
+
+
+void setup(){
+  // Open perial port
+  Serial.begin(115200);
+  // Start DHT
+  dht.begin();
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println(".");
+  }
+
+  // Print ESP8266 Local IP Address
+  Serial.print("Wifi connected. IP Addr: ");
+  Serial.println(WiFi.localIP());
+
+   // Set InfluxDB 1 authentication params
+  client.setConnectionParamsV1(INFLUXDB_URL, INFLUXDB_DB_NAME, INFLUXDB_USER, INFLUXDB_PASSWORD);
+  // sensor.addTag("temp", "temp");
+  // check influxdb connection
+  if (client.validateConnection()) {
+    Serial.print("Connected to InfluxDB: ");
+    Serial.println(client.getServerUrl());
+  } else {
+    Serial.print("InfluxDB connection failed: ");
+    Serial.println(client.getLastErrorMessage());
+  }
+
+  // Set relay pin out
+  pinMode(RELAYPIN, OUTPUT);
+  
+}
+
+void loop()
+{
+   humidityData = dht.readHumidity();
+   temperatureData = dht.readTemperature();
+   
+   Serial.print("Temp: ");
+   Serial.println(temperatureData);
+   Serial.print("Hum: ");
+   Serial.println(humidityData);
+
+   sensor.clearFields();
+
+   if (temperatureData > triggerTemperature) {
+        digitalWrite(RELAYPIN, HIGH);
+        sensor.addField("fan", 1);
+      } else {
+        digitalWrite(RELAYPIN, LOW);
+        sensor.addField("fan", 0);
+    }
+  
+   // Send data to influxdb
+   sensor.addField("temperature", temperatureData);
+   sensor.addField("humidity", humidityData);
+   client.writePoint(sensor);
+ 
+   delay(300000);
+  
+}
